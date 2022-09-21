@@ -3,6 +3,9 @@ import fs from 'fs/promises'
 import fsSync from 'fs'
 import csvParser from "csv-parser"
 import { MetaTransaction } from '@gnosis.pm/safe-contracts'
+import { HardhatRuntimeEnvironment } from 'hardhat/types'
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
+import { JsonRpcProvider } from '@ethersproject/providers'
 
 const cliCacheDir = "cli_cache"
 
@@ -56,3 +59,27 @@ export const readCsv = async<T>(file: string): Promise<T[]> => new Promise((reso
         .on("error", (err) => { reject(err) })
         .on("end", () => { resolve(results)})
 })
+
+export const getCustomSigner = () => {
+    // the account to be used must be unlocked
+    const url = process.env.NODE_URL || ''
+    const chainID = process.env.CHAIN_ID || ''
+    const account = process.env.IMPERSONATE_ACCOUNT || ''
+    const provider = new JsonRpcProvider(url, parseInt(chainID))
+    const signer = provider.getSigner(account)
+    return SignerWithAddress.create(signer)
+}
+
+export const getSignerFromConfig = async (hre: HardhatRuntimeEnvironment, taskArgs: any) => {
+    if (hre.network.name === 'custom' && hre.network.config.from) {
+        // @todo we can use the getSigner from hardhat because it's only allowed in hardhat networks (we are using ganache)
+        // const from = hre.network.config.from
+        // const signer = await hre.ethers.getSigner(from) // can not use signer from hardhat
+        const signer = await getCustomSigner()
+        return signer
+    } else {
+        const signers = await hre.ethers.getSigners()
+        const signer = signers[taskArgs.signerIndex]
+        return signer
+    }
+}

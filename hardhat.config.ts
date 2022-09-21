@@ -14,7 +14,7 @@ const argv = yargs
 
 // Load environment variables.
 dotenv.config();
-const { NETWORK, NODE_URL, INFURA_KEY, MNEMONIC, PK, SOLIDITY_VERSION, SOLIDITY_SETTINGS } = process.env;
+const { NETWORK, NODE_URL, INFURA_KEY, MNEMONIC, PK, SOLIDITY_VERSION, SOLIDITY_SETTINGS, IMPERSONATE_ACCOUNT } = process.env;
 
 const DEFAULT_MNEMONIC =
   "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
@@ -58,10 +58,10 @@ const userConfig: HardhatUserConfig = {
       blockGasLimit: 100000000,
       gas: 100000000
     },
-    mainnet: {
-      ...sharedNetworkConfig,
-      url: `https://mainnet.infura.io/v3/${INFURA_KEY}`,
-    },
+    // mainnet: {
+    //   ...sharedNetworkConfig,
+    //   url: `https://mainnet.infura.io/v3/${INFURA_KEY}`,
+    // },
     xdai: {
       ...sharedNetworkConfig,
       url: "https://xdai.poanetwork.dev",
@@ -105,6 +105,7 @@ if (NODE_URL) {
   userConfig.networks!!.custom = {
     ...sharedNetworkConfig,
     url: NODE_URL,
+    from: IMPERSONATE_ACCOUNT,
   }
 }
 export default userConfig

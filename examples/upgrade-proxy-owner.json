@@ -1,0 +1,22 @@
+[
+  {
+      "to": "0x4aa42145Aa6Ebf72e164C9bBC74fbD3788045016",
+      "value": "0",
+      "method": "upgradeTo(uint256,address)",
+      "params": [
+          1,
+          "0x0000000000000000000000000000000000000000"
+      ],
+      "operation": 0
+  },
+  {
+      "to": "0x4C36d2919e407f0Cc2Ee3c993ccF8ac26d9CE64e",
+      "value": "0",
+      "method": "upgradeTo(uint256,address)",
+      "params": [
+          1,
+          "0x0000000000000000000000000000000000000000"
+      ],
+      "operation": 0
+  }
+]

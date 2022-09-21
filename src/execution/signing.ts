@@ -4,7 +4,7 @@ import { buildSafeTransaction, SafeSignature, safeSignMessage, signHash } from "
 import { parseEther } from "@ethersproject/units";
 import { isHexString } from "ethers/lib/utils";
 import { SafeTxProposal } from "./proposing";
-import { proposalFile, signaturesFile, readFromCliCache, writeToCliCache, loadSignatures } from "./utils";
+import { proposalFile, signaturesFile, readFromCliCache, writeToCliCache, loadSignatures, getSignerFromConfig } from "./utils";
 
 task("sign-tx", "Signs a Safe transaction")
     .addPositionalParam("address", "Address or ENS name of the Safe to check", undefined, types.string)
@@ -38,8 +38,7 @@ task("sign-proposal", "Signs a Safe transaction")
     .addParam("signerIndex", "Index of the signer to use", 0, types.int, true)
     .setAction(async (taskArgs, hre) => {
         const proposal: SafeTxProposal = await readFromCliCache(proposalFile(taskArgs.hash))
-        const signers = await hre.ethers.getSigners()
-        const signer = signers[taskArgs.signerIndex]
+        const signer = await getSignerFromConfig(hre, taskArgs)
         const safe = await safeSingleton(hre, proposal.safe)
         const safeAddress = await safe.resolvedAddress
         console.log(`Using Safe at ${safeAddress} with ${signer.address}`)
