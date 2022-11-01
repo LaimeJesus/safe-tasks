@@ -1,0 +1,11 @@
+[
+  {
+    "to": "0x1f35121d14abc91689a7903bf911dce83b0c6ef6",
+    "value": "0",
+    "method": "setRequiredSignatures(uint256)",
+    "params": [
+        "1"
+    ],
+    "operation": 0
+  }
+]

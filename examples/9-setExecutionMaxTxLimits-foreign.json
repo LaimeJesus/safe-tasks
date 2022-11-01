@@ -1,0 +1,11 @@
+[
+  {
+    "to": "0x8659Cf2273438f9b5C1Eb367Def45007a7A16a24",
+    "value": "0",
+    "method": "setExecutionMaxPerTx(uint256)",
+    "params": [
+        "1000000000000000000"
+    ],
+    "operation": 0
+  }
+]
