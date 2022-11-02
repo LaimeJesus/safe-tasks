@@ -56,7 +56,7 @@ const userConfig: HardhatUserConfig = {
     hardhat: {
       allowUnlimitedContractSize: true,
       blockGasLimit: 100000000,
-      gas: 100000000
+      gas: 800000000
     },
     mainnet: {
       ...sharedNetworkConfig,
@@ -90,6 +90,10 @@ const userConfig: HardhatUserConfig = {
       ...sharedNetworkConfig,
       url: `https://bsc-dataseed.binance.org/`,
     },
+    chiado: {
+      ...sharedNetworkConfig,
+      url: 'https://rpc.chiadochain.net',
+    }
   },
   namedAccounts: {
     deployer: 0,

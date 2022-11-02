@@ -1,30 +1,10 @@
 import { task, types } from "hardhat/config";
-import { multiSendLib, safeSingleton } from "../contracts";
-import { buildMultiSendSafeTx, buildSafeTransaction, calculateSafeTransactionHash, SafeTransaction, MetaTransaction } from "@gnosis.pm/safe-contracts";
+import { safeSingleton } from "../contracts";
+import { buildSafeTransaction } from "@gnosis.pm/safe-contracts";
 import { parseEther } from "@ethersproject/units";
-import { getAddress, isHexString } from "ethers/lib/utils";
-import { proposalFile, readFromCliCache, writeToCliCache, writeTxBuilderJson } from "./utils";
+import { isHexString } from "ethers/lib/utils";
+import { calcSafeTxHash, loadMetaTransactions, parseMultiSendJsonFile, proposalFile, readFromCliCache, SafeTxProposal, writeToCliCache, writeTxBuilderJson } from "./utils";
 import { BigNumber } from "@ethersproject/bignumber";
-import { Contract, ethers } from "ethers";
-import fs from 'fs/promises'
-import { HardhatRuntimeEnvironment } from "hardhat/types";
-
-export interface SafeTxProposal {
-    safe: string,
-    chainId: number,
-    safeTxHash: string,
-    tx: SafeTransaction
-}
-
-const calcSafeTxHash = async (safe: Contract, tx: SafeTransaction, chainId: number, onChainOnly: boolean): Promise<string> => {
-    const onChainHash = await safe.getTransactionHash(
-        tx.to, tx.value, tx.data, tx.operation, tx.safeTxGas, tx.baseGas, tx.gasPrice, tx.gasToken, tx.refundReceiver, tx.nonce
-    )
-    if (onChainOnly) return onChainHash
-    const offChainHash = calculateSafeTransactionHash(safe, tx, chainId)
-    if (onChainHash != offChainHash) throw Error("Unexpected hash! (For pre-1.3.0 version use --on-chain-hash)")
-    return offChainHash
-}
 
 task("propose", "Create a Safe tx proposal json file")
     .addPositionalParam("address", "Address or ENS name of the Safe to check", undefined, types.string)
@@ -52,44 +32,6 @@ task("propose", "Create a Safe tx proposal json file")
         await writeToCliCache(proposalFile(safeTxHash), proposal)
         console.log(`Safe transaction hash: ${safeTxHash}`)
     });
-
-interface TxDescription {
-    to: string,
-    value: string // in ETH
-    data?: string
-    method?: string
-    params?: any[]
-    operation: 0 | 1
-}
-
-const buildData = (method: string, params?: any[]): string => {
-    const iface = new ethers.utils.Interface([`function ${method}`])
-    return iface.encodeFunctionData(method, params)
-}
-
-const buildMetaTx = (description: TxDescription): MetaTransaction => {
-    const to = getAddress(description.to)
-    const value = parseEther(description.value).toString()
-    const operation = description.operation
-    const data = isHexString(description.data) ? description.data!! : (description.method ? buildData(description.method, description.params) : "0x")
-    return { to, value, data, operation }
-}
-
-const loadMetaTransactions = async (file: string) => {
-    const txsData: TxDescription[] = JSON.parse(await fs.readFile(file, 'utf8'))
-    if (txsData.length == 0) {
-        throw Error("No transacitons provided")
-    }
-    return txsData.map(desc => buildMetaTx(desc))
-}
-
-const parseMultiSendJsonFile = async (hre: HardhatRuntimeEnvironment, txs: MetaTransaction[], nonce: number, multiSendAddress?: string): Promise<SafeTransaction> => {
-    if (txs.length == 1) {
-        return buildSafeTransaction({ ...txs[0], nonce: nonce })
-    }
-    const multiSend = await multiSendLib(hre, multiSendAddress)
-    return buildMultiSendSafeTx(multiSend, txs, nonce)
-}
 
 task("propose-multi", "Create a Safe tx proposal json file")
     .addPositionalParam("address", "Address or ENS name of the Safe to check", undefined, types.string)

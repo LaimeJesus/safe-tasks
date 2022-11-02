@@ -1,10 +1,9 @@
 import { task, types } from "hardhat/config";
 import { safeSingleton } from "../contracts";
-import { buildSafeTransaction, SafeSignature, safeSignMessage, signHash } from "@gnosis.pm/safe-contracts";
+import { buildSafeTransaction, safeSignMessage, signHash } from "@gnosis.pm/safe-contracts";
 import { parseEther } from "@ethersproject/units";
 import { isHexString } from "ethers/lib/utils";
-import { SafeTxProposal } from "./proposing";
-import { proposalFile, signaturesFile, readFromCliCache, writeToCliCache, loadSignatures } from "./utils";
+import { proposalFile, readFromCliCache, SafeTxProposal, updateSignatureFile } from "./utils";
 
 task("sign-tx", "Signs a Safe transaction")
     .addPositionalParam("address", "Address or ENS name of the Safe to check", undefined, types.string)
@@ -26,12 +25,6 @@ task("sign-tx", "Signs a Safe transaction")
         const signature = await safeSignMessage(signer, safe, tx)
         console.log(`Signature: ${signature.data}`)
     });
-
-const updateSignatureFile = async(safeTxHash: string, signature: SafeSignature) => {
-    const signatures: Record<string, string> = await loadSignatures(safeTxHash)
-    signatures[signature.signer] = signature.data
-    await writeToCliCache(signaturesFile(safeTxHash), signatures)
-}
 
 task("sign-proposal", "Signs a Safe transaction")
     .addPositionalParam("hash", "Hash of Safe transaction to display", undefined, types.string)
